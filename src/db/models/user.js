@@ -1,8 +1,10 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/dbConnector.js";
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 
-export const User = sequelize.define(
+const User = sequelize.define(
   "user",
   {
     id: {
@@ -162,3 +164,47 @@ export const User = sequelize.define(
   }
 )
 
+
+User.beforeSave(async function (next) {
+  if (!this.changed("password")) return next()
+  this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
+
+
+User.prototype.isPasswordCorrect = async function(password) {
+  return await bcrypt.compare(password, this.password)
+}
+
+
+User.prototype.generateAccessToken = function() {
+  return jwt.sign(
+    {
+      id: this.id,
+      empId: this.empId,
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+    }
+  )
+}
+
+
+User.prototype.generateRefreshToken = function() {
+  return jwt.sign(
+    {
+      empId: this.empId
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    }
+  )
+}
+
+
+export default User
