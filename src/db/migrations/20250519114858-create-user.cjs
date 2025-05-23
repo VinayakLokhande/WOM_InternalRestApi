@@ -61,8 +61,8 @@ module.exports = {
       refreshToken: {
         type: Sequelize.STRING
       },
-      allowedAccount: {
-        type: Sequelize.BOOLEAN
+      accountStatus: {
+        type: Sequelize.ENUM("PENDING", "APPROVE", "DENY"),
       },
       createdAt: {
         allowNull: false,

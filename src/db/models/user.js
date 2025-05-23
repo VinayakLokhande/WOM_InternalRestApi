@@ -140,8 +140,8 @@ export const User = sequelize.define(
     refreshToken: {
       type: DataTypes.STRING
     },
-    allowedAccount: {
-      type: DataTypes.BOOLEAN
+    accountStatus: {
+      type: DataTypes.ENUM("PENDING", "APPROVE", "DENY")
     },
     createdAt: {
       allowNull: false,
