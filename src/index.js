@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import { connectDb } from "./config/dbConnector.js"
-import app from "./app.js"
+import { app } from "./app.js"
 
 dotenv.config({
     path: './.env'
