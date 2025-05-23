@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     try {
-    await queryInterface.createTable('user', {
+    await queryInterface.createTable('users', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -35,7 +35,7 @@ module.exports = {
         allowNull: false
       },
       phone: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false
       },
       email: {
@@ -71,20 +71,23 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deletedAt: {
+        type: Sequelize.DATE
       }
     });
 
-    await queryInterface.addConstraint("user", {
-      fields: ['email'],
-      type: "unique",
-      name: "unique_constraint"
-    });
+    // await queryInterface.addConstraint("User", {
+    //   fields: ['email'],
+    //   type: "unique",
+    //   name: "unique_constraint"
+    // });
   } catch(error) {
     console.error("migration error : ", error)
     throw error
   }
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('user');
+    await queryInterface.dropTable('users');
   }
 };

@@ -19,6 +19,7 @@ const sendProdErrorResponse = (error, res) => {
     const status = error.status
     const message = error.message
     const data = error.data
+    const stack = error.stack
 
     if (error.isOperational) {
         return res.status(statusCode).json({
@@ -27,6 +28,8 @@ const sendProdErrorResponse = (error, res) => {
             data
         })
     }
+
+    console.log(`MY API ERROR NAME : ${error.name}`, `MY API ERROR MESSAGE : ${error.message}`, stack)
 
     return res.status(500).json({
         status: "error",

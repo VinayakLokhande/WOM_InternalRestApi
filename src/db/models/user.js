@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
 
 
 const User = sequelize.define(
-  "user",
+  "User",
   {
     id: {
       allowNull: false,
@@ -16,114 +16,114 @@ const User = sequelize.define(
     empId: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "empId cannot be null"
-        },
-        notEmpty: {
-          msg: "empId cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "empId cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "empId cannot be empty"
+      //   }
+      // }
     },
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "firstName cannot be null"
-        },
-        notEmpty: {
-          msg: "firstName cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "firstName cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "firstName cannot be empty"
+      //   }
+      // }
     },
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "lastName cannot be null"
-        },
-        notEmpty: {
-          msg: "lastName cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "lastName cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "lastName cannot be empty"
+      //   }
+      // }
     },
     department: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "department cannot be null"
-        },
-        notEmpty: {
-          msg: "department cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "department cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "department cannot be empty"
+      //   }
+      // }
     },
     company: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "company cannot be null"
-        },
-        notEmpty: {
-          msg: "company cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "company cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "company cannot be empty"
+      //   }
+      // }
     },
     userType: {
       type: DataTypes.ENUM("ADMIN", "MANAGER", "EMPLOYEE"),
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "userType cannot be null"
-        },
-        notEmpty: {
-          msg: "userType cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "userType cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "userType cannot be empty"
+      //   }
+      // }
     },
     phone: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "phone cannot be null"
-        },
-        notEmpty: {
-          msg: "phone cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "phone cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "phone cannot be empty"
+      //   }
+      // }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: {
-        name: "unique_constraint",
-        msg: "email must be unique"
-      },
-      validate: {
-        isNull: {
-          msg: "email cannot be null"
-        },
-        notEmpty: {
-          msg: "email cannot be empty"
-        }
-      }
+      // unique: {
+      //   name: "unique_constraint",
+      //   msg: "email must be unique"
+      // },
+      // validate: {
+      //   isNull: {
+      //     msg: "email cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "email cannot be empty"
+      //   }
+      // }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isNull: {
-          msg: "password cannot be null"
-        },
-        notEmpty: {
-          msg: "password cannot be empty"
-        }
-      }
+      // validate: {
+      //   isNull: {
+      //     msg: "password cannot be null"
+      //   },
+      //   notEmpty: {
+      //     msg: "password cannot be empty"
+      //   }
+      // }
     },
     avatar: {
       type: DataTypes.STRING
@@ -143,7 +143,8 @@ const User = sequelize.define(
       type: DataTypes.STRING
     },
     accountStatus: {
-      type: DataTypes.ENUM("PENDING", "APPROVE", "DENY")
+      type: DataTypes.ENUM("PENDING", "APPROVE", "DENY"),
+      defaultValue: "PENDING"
     },
     createdAt: {
       allowNull: false,
@@ -152,7 +153,8 @@ const User = sequelize.define(
     updatedAt: {
       allowNull: false,
       type: DataTypes.DATE
-    },
+    }
+    ,
     deletedAt: {
       type: DataTypes.DATE
     }
@@ -160,15 +162,22 @@ const User = sequelize.define(
   {
     paranoid: true,
     freezeTableName: true,
-    modelName: "User"
+    modelName: "User",
+    tableName: "users"
   }
 )
 
 
-User.beforeSave(async function (next) {
-  if (!this.changed("password")) return next()
-  this.password = await bcrypt.hash(this.password, 10)
-  next()
+// User.beforeSave(async function (next) {
+//   if (!this.changed("password")) return next()
+//   this.password = await bcrypt.hash(this.password, 10)
+//   next()
+// })
+
+User.beforeSave(async (user, options) => {
+  if (user.changed("password")) {
+    user.password = await bcrypt.hash(user.password, 10)
+  }
 })
 
 
