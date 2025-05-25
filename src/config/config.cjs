@@ -7,7 +7,8 @@ module.exports = {
     database: process.env.DEV_DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: "mssql"
+    dialect: "mssql",
+    logging: false
   },
   test: {
     username: "root",
@@ -22,6 +23,7 @@ module.exports = {
     database: process.env.DEV_DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: "mssql"
+    dialect: "mssql",
+    logging: false
   }
 }

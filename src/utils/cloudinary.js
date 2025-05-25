@@ -21,15 +21,15 @@ const uploadOnCloudinary = async (localFilePath) => {
                 resource_type: "auto"
             }
         )
-        if (fileUploadResponse) {
+        // if (fileUploadResponse) {
             console.log("FILE UPLOADED SUCCESSFULLY ON CLOUDINARY : ", fileUploadResponse)
             fs.unlinkSync(localFilePath)
             return fileUploadResponse
-        } else {
-            console.log("FILE NOT UPLOADED ON CLOUDINARY : ", fileUploadResponse)
-            // fs.unlinkSync(localFilePath)
-            return null
-        }
+        // } else {
+        //     console.log("FILE NOT UPLOADED ON CLOUDINARY : ", fileUploadResponse)
+        //     fs.unlinkSync(localFilePath)
+        //     return null
+        // }
     } catch (error) {
         fs.unlinkSync(localFilePath)
         console.log("ERROR OCCURED WHILE UPLOADING FILE ON CLOUDINARY : ", error)

@@ -47,7 +47,7 @@ module.exports = {
         allowNull: false
       },
       avatar: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       contentEditor: {
         type: Sequelize.BOOLEAN
@@ -58,8 +58,8 @@ module.exports = {
       lastSeen: {
         type: Sequelize.DATE
       },
-      refreshToken: {
-        type: Sequelize.STRING
+      accessToken: {
+        type: Sequelize.TEXT
       },
       accountStatus: {
         type: Sequelize.ENUM("PENDING", "APPROVE", "DENY"),

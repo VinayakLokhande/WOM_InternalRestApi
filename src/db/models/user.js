@@ -126,7 +126,7 @@ const User = sequelize.define(
       // }
     },
     avatar: {
-      type: DataTypes.STRING
+      type: DataTypes.TEXT
     },
     contentEditor: {
       type: DataTypes.BOOLEAN,
@@ -139,8 +139,8 @@ const User = sequelize.define(
     lastSeen: {
       type: DataTypes.DATE
     },
-    refreshToken: {
-      type: DataTypes.STRING
+    accessToken: {
+      type: DataTypes.TEXT
     },
     accountStatus: {
       type: DataTypes.ENUM("PENDING", "APPROVE", "DENY"),
@@ -167,12 +167,6 @@ const User = sequelize.define(
   }
 )
 
-
-// User.beforeSave(async function (next) {
-//   if (!this.changed("password")) return next()
-//   this.password = await bcrypt.hash(this.password, 10)
-//   next()
-// })
 
 User.beforeSave(async (user, options) => {
   if (user.changed("password")) {
