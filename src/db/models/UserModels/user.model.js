@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../../config/dbConnector.js";
+import { sequelize } from "../../../config/dbConnector.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
@@ -16,114 +16,41 @@ const User = sequelize.define(
     empId: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "empId cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "empId cannot be empty"
-      //   }
-      // }
     },
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "firstName cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "firstName cannot be empty"
-      //   }
-      // }
     },
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "lastName cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "lastName cannot be empty"
-      //   }
-      // }
     },
     department: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "department cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "department cannot be empty"
-      //   }
-      // }
     },
     company: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "company cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "company cannot be empty"
-      //   }
-      // }
     },
     userType: {
       type: DataTypes.ENUM("ADMIN", "MANAGER", "EMPLOYEE"),
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "userType cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "userType cannot be empty"
-      //   }
-      // }
     },
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "phone cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "phone cannot be empty"
-      //   }
-      // }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      // unique: {
-      //   name: "unique_constraint",
-      //   msg: "email must be unique"
-      // },
-      // validate: {
-      //   isNull: {
-      //     msg: "email cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "email cannot be empty"
-      //   }
-      // }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      // validate: {
-      //   isNull: {
-      //     msg: "password cannot be null"
-      //   },
-      //   notEmpty: {
-      //     msg: "password cannot be empty"
-      //   }
-      // }
+    },
+    avatarId: {
+      type: DataTypes.STRING
     },
     avatar: {
       type: DataTypes.TEXT
@@ -136,6 +63,9 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    stopAccount: {
+      type: DataTypes.BOOLEAN
+    },
     lastSeen: {
       type: DataTypes.DATE
     },
@@ -145,6 +75,9 @@ const User = sequelize.define(
     accountStatus: {
       type: DataTypes.ENUM("PENDING", "APPROVE", "DENY"),
       defaultValue: "PENDING"
+    },
+    fcmToken: {
+      type: DataTypes.STRING
     },
     createdAt: {
       allowNull: false,

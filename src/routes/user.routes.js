@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getAllUsers, loginUser, registerUser } from "../controllers/user.controller.js"
+import { getAllUsers, getCurrentUserDetails, loginUser, logoutUser, registerUser, updateUserDetailsRequest } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { isValidAccessor, verifyJWT } from "../middlewares/auth.middleware.js"
 
@@ -21,7 +21,19 @@ userRouter
     .post(loginUser)
 
 userRouter
-    .route("/")
+    .route("/registeredUsers")
     .get(verifyJWT, isValidAccessor("ADMIN"), getAllUsers)
+
+userRouter
+    .route("/")
+    .get(verifyJWT, getCurrentUserDetails)
+
+userRouter
+    .route("/logout")
+    .post(verifyJWT, logoutUser)
+
+userRouter
+    .route("/profile/update")
+    .patch(updateUserDetailsRequest)
 
 export default userRouter

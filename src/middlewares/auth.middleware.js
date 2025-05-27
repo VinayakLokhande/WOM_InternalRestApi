@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import jwt from "jsonwebtoken"
-import User from "../db/models/user.js";
+import User from "../db/models/UserModels/user.model.js";
 import { Op } from "sequelize";
 
 
@@ -21,7 +21,7 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
                 [Op.or]: [{ empId: decodedToken.empId }]
             },
             attributes: {
-                exclude: ["password", "deletedAt"]
+                exclude: ["password", "createdAt", "updatedAt", "deletedAt"]
             }
         })
 
