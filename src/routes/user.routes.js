@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getAllUsers, getCurrentUserDetails, loginUser, logoutUser, registerUser, updateUserDetailsRequest } from "../controllers/user.controller.js"
+import { getAllUsers, getCurrentUserDetails, handleAdminResponseForProfileUpdationRequest, loginUser, logoutUser, registerUser, updateUserDetailsRequest } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { isValidAccessor, verifyJWT } from "../middlewares/auth.middleware.js"
 
@@ -34,6 +34,15 @@ userRouter
 
 userRouter
     .route("/profile/update")
-    .patch(updateUserDetailsRequest)
+    .post(upload.fields([
+        {
+            name: "avatar",
+            maxCount: 5
+        }
+    ]), updateUserDetailsRequest)
+
+userRouter
+    .route("/profile/update/response")
+    .post(verifyJWT, isValidAccessor("ADMIN"), handleAdminResponseForProfileUpdationRequest)
 
 export default userRouter

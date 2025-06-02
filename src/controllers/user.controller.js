@@ -2,11 +2,9 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import ApiError from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import User from "../db/models/UserModels/user.model.js"
-import { Op, where } from "sequelize"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
-import jwt from "jsonwebtoken"
-import { Where } from "sequelize/lib/utils"
-import UserUpdateRequests from "../db/models/UserModels/user_update_requests.js"
+import { Op } from "sequelize"
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
+import UserUpdateRequests from "../db/models/UserModels/profileUpdateRequests.model.js"
 import { startOfMonth, endOfMonth } from "date-fns"
 
 
@@ -90,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0) {
         avatarLocalPath = req.files.avatar[0].path
     }
-    
+
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
     // // implementation to upload more than one resource on cloudinary
@@ -141,6 +139,8 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 
+
+    // TODO : send new account request notification to admin
 
     return await res.status(201).json(
         new ApiResponse(200, "User registered successfully", createdUser)
@@ -208,10 +208,10 @@ const loginUser = asyncHandler(async (req, res) => {
             )
         )
 
-}) 
+})
 
 
-const logoutUser = asyncHandler( async (req, res) => {
+const logoutUser = asyncHandler(async (req, res) => {
 
     const response = await User.update({
         accessToken: null
@@ -222,7 +222,7 @@ const logoutUser = asyncHandler( async (req, res) => {
     })
 
     return res.status(200).json(
-        new ApiResponse(200, "User logged out successfully", `${response}` )
+        new ApiResponse(200, "User logged out successfully", `${response}`)
     )
 })
 
@@ -251,7 +251,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 })
 
 
-const updateUserDetailsRequest = asyncHandler( async (req, res) => {
+const updateUserDetailsRequest = asyncHandler(async (req, res) => {
 
     // 1) check empId is present
     // 2) check requested user has already any updation request pending
@@ -264,8 +264,8 @@ const updateUserDetailsRequest = asyncHandler( async (req, res) => {
     // 9) return response
 
     const { empId, firstName, lastName, department, company, userType } = req.body
-
-    if (!empId?.trim()) {
+    
+    if (!empId) {
         throw new ApiError(404, "empId is required")
     }
 
@@ -283,7 +283,7 @@ const updateUserDetailsRequest = asyncHandler( async (req, res) => {
     const updateRequestCountForTheUserInTheCurrentMonth = await UserUpdateRequests.count({
         where: {
             empId: empId.trim(),
-            createdAt : {
+            createdAt: {
                 [Op.between]: [startOfMonth(new Date()), endOfMonth(new Date())]
             }
         }
@@ -293,13 +293,13 @@ const updateUserDetailsRequest = asyncHandler( async (req, res) => {
         throw new ApiError(400, "Your updation limit for this month has been exhausted. You could update your profile only 3 times a month.")
     }
 
-    let avtarLocalFilePath 
+    let avtarLocalFilePath
     if (req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0) {
         avtarLocalFilePath = req.files.avatar[0].path
     }
 
     const avatarUploadResponse = await uploadOnCloudinary(avtarLocalFilePath)
-    
+
     const user = await User.findOne({
         where: {
             empId: empId
@@ -307,7 +307,7 @@ const updateUserDetailsRequest = asyncHandler( async (req, res) => {
     })
 
     const savedUserUpdateRequest = await UserUpdateRequests.create({
-        empId: empId, 
+        empId: empId,
         firstName: firstName,
         lastName: lastName,
         department: department,
@@ -332,6 +332,124 @@ const updateUserDetailsRequest = asyncHandler( async (req, res) => {
 })
 
 
+const handleAdminResponseForProfileUpdationRequest = asyncHandler(async (req, res) => {
+    // 1) check if empId and admin response is given from the params or not
+    // 2) in admin response param there is should be either approve or deny
+    // 3) check if user if present or not with given empId
+    // 4) if not send error
+    // 5) check is profile updation request is pending for the user or not
+    // 6) if not send error
+    // 7) if yes first check is there deny in admin response param
+    // 8) if yes then update updateStatus to deny in user_update_requests table
+    // 9) and send deny notification to requested user
+    // 10) otherwise check user has updated his profile picture or not
+    // 11) if new avatarId is present then delete old profile from cloudinary
+    // 12) update old details with new details
+    // 13) also update updateStatus in user_update_requests table
+    // 14) return response
+
+    const { empId, adminResStatus } = req.body
+
+    if (!empId) {
+        throw new ApiError(400, "empId is required")
+    }
+
+    if (!adminResStatus) { 
+        throw new ApiError(400, "admin response is required")
+    }
+
+    if (adminResStatus !== "APPROVE" && adminResStatus !== "DENY") {
+        throw new ApiError(400, "Invalid admin response.")
+    }
+
+    const user = await User.findOne({
+        where: {
+            empId: empId
+        }
+    })
+
+   
+    if (!user) {
+        throw new ApiError(400, `no user exists with empId ${empId}`)
+    }
+
+    const updationRequestForProvidedEmpId = await UserUpdateRequests.findOne({
+        where: {
+            empId: user.empId,
+            updateStatus: "PENDING"
+        }
+    })
+
+   
+    if (!updationRequestForProvidedEmpId) {
+        throw new ApiError(400, "no profile updation request found for the user")
+    }
+
+    if (adminResStatus === "DENY") {
+
+        await deleteFromCloudinary(updationRequestForProvidedEmpId.newAvatarId)
+
+        const result = await UserUpdateRequests.update({
+            updateStatus: "DENY",
+            newAvatarId: "",
+            newAvatarUrl: ""
+        }, {
+            where: {
+                empId: user.empId,
+                updateStatus: "PENDING"
+            }
+        })
+
+        if (!result) {
+            throw new ApiError(400, "Something went wrong while updating user profile updation status")
+        }
+
+        // TODO : send notification to empId about your profile updation request denied
+
+        return res.status(200).json(
+            new ApiResponse(200, `Profile updation request has been denied by the admin`)
+        )
+    }
+
+    let cloudinaryResourceDeleteResponse
+    if (updationRequestForProvidedEmpId.newAvatarId) {
+        cloudinaryResourceDeleteResponse = await deleteFromCloudinary(updationRequestForProvidedEmpId.oldAvatarId)
+    }
+
+    const updatedUser = await User.update({
+        firstName: updationRequestForProvidedEmpId.firstName,
+        lastName: updationRequestForProvidedEmpId.lastName,
+        department: updationRequestForProvidedEmpId.department,
+        company: updationRequestForProvidedEmpId.company,
+        userType: updationRequestForProvidedEmpId.userType,
+        avatarId: updationRequestForProvidedEmpId?.newAvatarId,
+        avatar: updationRequestForProvidedEmpId?.newAvatarUrl
+    }, {
+        where: {
+            empId: user.empId
+        }
+    })
+
+    if (!updatedUser) {
+        throw new ApiError(404, "Something went wrong while updating user profile")
+    }
+
+    await UserUpdateRequests.update({
+        updateStatus: "APPROVE"
+    }, {
+        where: {
+            empId: user.empId,
+            updateStatus: "PENDING"
+        }
+    })
+
+    // TODO : send notifcation to profile updation requested user
+
+    return res.status(200).json(
+        new ApiResponse(200, "User profile updated successfully")
+    )
+
+})
 
 
 export {
@@ -340,5 +458,6 @@ export {
     logoutUser,
     getAllUsers,
     getCurrentUserDetails,
-    updateUserDetailsRequest
+    updateUserDetailsRequest,
+    handleAdminResponseForProfileUpdationRequest
 }
